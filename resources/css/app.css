@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    /* ── Maritime institutional palette ── */
+    --color-navy:        #0B3C5D;
+    --color-navy-dark:   #061E30;
+    --color-navy-light:  #1565A9;
+    --color-navy-muted:  #2176AE;
+    --color-gold:        #C4992A;
+    --color-gold-dark:   #A07820;
+    --color-gold-light:  #F5E6C0;
+    --color-sea:         #1A7FAE;
+    --color-sea-light:   #E8F4FB;
+    --color-green:       #1B6B3A;
+    --color-green-light: #E8F5EE;
+}
