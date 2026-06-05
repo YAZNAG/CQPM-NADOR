@@ -167,8 +167,15 @@
                     @error('lieu_naissance')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                {{-- Empty cell for layout alignment --}}
-                <div class="hidden md:block"></div>
+                {{-- Numéro de CIN --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
+                        Numéro de CIN <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="cin" value="{{ old('cin') }}" placeholder="Ex: AB123456"
+                           class="w-full border @error('cin') border-red-400 bg-red-50 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy transition-all uppercase">
+                    @error('cin')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
 
             </div>
         </div>

@@ -295,45 +295,68 @@
             </p>
         </div>
 
-        @php
-        $formations = [
-            ['emoji'=>'🧭','titre'=>'Navigation Maritime', 'badge'=>'Brevet de Patron',       'duree'=>'24 mois', 'desc'=>'Navigation côtière et hauturière, cartographie, météorologie marine, règlement international pour prévenir les abordages.'],
-            ['emoji'=>'⚙️','titre'=>'Machine Maritime',    'badge'=>'Brevet de Mécanicien',    'duree'=>'24 mois', 'desc'=>'Conduite et maintenance des moteurs diesel marins, systèmes électriques, hydrauliques et de réfrigération embarqués.'],
-            ['emoji'=>'🎣','titre'=>'Pêche Artisanale',    'badge'=>'Certificat Professionnel', 'duree'=>'12 mois', 'desc'=>'Techniques de pêche côtière, identification des espèces, gestion des captures, réglementation halieutique nationale.'],
-            ['emoji'=>'🛟','titre'=>'Sécurité Maritime',   'badge'=>'STCW de base',            'duree'=>'6 semaines','desc'=>'Techniques de survie en mer, lutte anti-incendie, PMAN, premiers secours médicaux, GMDSS/VHF.'],
-            ['emoji'=>'🐟','titre'=>'Aquaculture',         'badge'=>'Technicien Spécialisé',   'duree'=>'18 mois', 'desc'=>'Élevage de poissons et coquillages, gestion des installations aquacoles côtières, qualité et traçabilité des produits.'],
-            ['emoji'=>'🏭','titre'=>'Transformation',      'badge'=>'Certificat Professionnel','duree'=>'12 mois', 'desc'=>'Valorisation des produits de la mer, procédés HACCP, conditionnement, chaîne du froid et normes d\'hygiène.'],
-        ];
-        @endphp
-
+        @if($filieres->isEmpty())
+        <div class="max-w-lg mx-auto text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+            <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+            <p class="text-gray-400 text-sm font-medium">Aucune filière publiée pour le moment.</p>
+        </div>
+        @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            @foreach($formations as $f)
-            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-navy/20 transition-all group">
+            @foreach($filieres as $filiere)
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-navy/20 transition-all group shadow-sm">
+                {{-- Accent top border --}}
                 <div class="h-1.5 bg-navy group-hover:bg-gold transition-colors"></div>
-                <div class="p-5">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-11 h-11 bg-sea-light rounded-lg flex items-center justify-center text-xl shrink-0">{{ $f['emoji'] }}</div>
-                        <div>
-                            <h3 class="font-bold text-navy text-sm group-hover:text-sea transition-colors leading-tight">{{ $f['titre'] }}</h3>
-                            <span class="text-xs bg-navy/10 text-navy px-2 py-0.5 rounded font-medium">{{ $f['badge'] }}</span>
+
+                <div class="p-5 flex flex-col h-full">
+                    {{-- Header: icon + title + badge --}}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-11 h-11 bg-sea-light rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                            @if($filiere->icon_path)
+                            <img src="{{ $filiere->icon_url }}"
+                                 alt="{{ $filiere->title }}"
+                                 class="w-full h-full object-cover">
+                            @else
+                            <svg class="w-6 h-6 text-sea" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                            </svg>
+                            @endif
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-navy text-sm group-hover:text-sea transition-colors leading-tight mb-1">
+                                {{ $filiere->title }}
+                            </h3>
+                            <span class="inline-block text-xs bg-navy/10 text-navy px-2 py-0.5 rounded font-medium leading-tight">
+                                {{ $filiere->badge }}
+                            </span>
                         </div>
                     </div>
-                    <p class="text-gray-500 text-xs leading-relaxed mb-4">{{ $f['desc'] }}</p>
+
+                    {{-- Description --}}
+                    <p class="text-gray-500 text-xs leading-relaxed flex-1 mb-4">
+                        {{ $filiere->description }}
+                    </p>
+
+                    {{-- Footer: duration + CTA --}}
                     <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                        <span class="text-xs text-gray-400 flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            {{ $f['duree'] }}
+                        <span class="text-xs text-gray-400 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ $filiere->duration }}
                         </span>
                         <a href="{{ route('candidature.form') }}"
                            class="text-xs font-bold text-gold hover:text-gold-dark transition-colors flex items-center gap-1">
-                            Postuler
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            Postuler &gt;
                         </a>
                     </div>
                 </div>
             </div>
             @endforeach
         </div>
+        @endif
 
         <div class="text-center mt-8">
             <a href="{{ route('candidature.form') }}"

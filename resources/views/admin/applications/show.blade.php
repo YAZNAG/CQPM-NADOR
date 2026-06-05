@@ -6,8 +6,13 @@
 
 @section('content')
 
+@php
+$tabMap = ['En attente' => 'en_attente', 'Validé' => 'accepte', 'Rejeté' => 'refuse'];
+$currentTab = $tabMap[$application->status] ?? 'en_attente';
+@endphp
+
 <div class="mb-5">
-    <a href="{{ route('admin.applications.index') }}"
+    <a href="{{ route('admin.applications.index', ['tab' => $currentTab]) }}"
        class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy transition-colors font-medium">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         Retour à la liste
@@ -29,6 +34,7 @@
             ['title' => 'Identité', 'fields' => [
                 ['label' => 'Nom',              'value' => $application->nom],
                 ['label' => 'Prénom',           'value' => $application->prenom],
+                ['label' => 'Numéro CIN',       'value' => $application->cin ?? '—'],
                 ['label' => 'Genre',            'value' => $application->genre],
                 ['label' => 'Date naissance',   'value' => $application->date_naissance->format('d/m/Y')],
                 ['label' => 'Lieu naissance',   'value' => $application->lieu_naissance],
@@ -52,7 +58,11 @@
                 @foreach($section['fields'] as $field)
                 <div class="{{ $field['label'] === 'Adresse postale' ? 'sm:col-span-2' : '' }}">
                     <dt class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{{ $field['label'] }}</dt>
+                    @if($field['label'] === 'Numéro CIN')
+                    <dd class="text-sm font-mono font-semibold text-gray-900 tracking-wider">{{ $field['value'] }}</dd>
+                    @else
                     <dd class="text-sm font-medium text-gray-900 leading-relaxed">{{ $field['value'] }}</dd>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -64,47 +74,49 @@
     {{-- ── Right: sidebar ───────────────────────────────────────────────────── --}}
     <div class="space-y-5">
 
-        {{-- Status update widget --}}
+        {{-- Quick action buttons --}}
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div class="bg-navy px-5 py-3">
-                <h3 class="text-white font-semibold text-sm">Statut du dossier</h3>
+            <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full
+                    {{ $application->status === 'Validé' ? 'bg-green-100 text-green-700' : ($application->status === 'Rejeté' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $application->status === 'Validé' ? 'bg-green-500' : ($application->status === 'Rejeté' ? 'bg-red-500' : 'bg-amber-500') }}"></span>
+                    {{ $application->status === 'Validé' ? 'Accepté' : ($application->status === 'Rejeté' ? 'Refusé' : 'En attente') }}
+                </span>
+                <span class="text-xs text-gray-500">Statut actuel</span>
             </div>
-            <div class="p-5">
-                {{-- Current badge --}}
-                <div class="mb-4 flex items-center gap-3">
-                    <span class="text-xs text-gray-500">Statut actuel :</span>
-                    <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full
-                        {{ $application->status === 'Validé' ? 'bg-green-100 text-green-700' : ($application->status === 'Rejeté' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $application->status === 'Validé' ? 'bg-green-500' : ($application->status === 'Rejeté' ? 'bg-red-500' : 'bg-amber-500') }}"></span>
-                        {{ $application->status }}
-                    </span>
-                </div>
-
-                {{-- Update form --}}
-                <form method="POST" action="{{ route('admin.applications.status', $application) }}" class="space-y-3">
+            <div class="p-4 space-y-2">
+                @if($application->status !== 'Validé')
+                <form method="POST" action="{{ route('admin.applications.status', $application) }}">
                     @csrf @method('PATCH')
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Changer le statut</label>
-                    <div class="grid grid-cols-1 gap-2">
-                        @foreach(\App\Models\Application::STATUSES as $s)
-                        <label class="flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-all
-                            {{ $application->status === $s ? 'border-navy bg-navy/5' : 'border-gray-200 hover:border-gray-300' }}">
-                            <input type="radio" name="status" value="{{ $s }}" {{ $application->status === $s ? 'checked' : '' }}
-                                   class="text-navy focus:ring-navy">
-                            <span class="text-sm font-medium {{ $application->status === $s ? 'text-navy' : 'text-gray-600' }}">{{ $s }}</span>
-                            @if($s === 'Validé')
-                            <span class="ml-auto w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                            @elseif($s === 'Rejeté')
-                            <span class="ml-auto w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                            @else
-                            <span class="ml-auto w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                            @endif
-                        </label>
-                        @endforeach
-                    </div>
-                    <button type="submit" class="w-full py-2.5 bg-navy hover:bg-navy-light text-white text-sm font-semibold rounded-lg transition-all mt-2">
-                        Mettre à jour le statut
+                    <input type="hidden" name="status" value="Validé">
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        Accepter le candidat
                     </button>
                 </form>
+                @endif
+
+                @if($application->status !== 'Rejeté')
+                <form method="POST" action="{{ route('admin.applications.status', $application) }}">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="status" value="Rejeté">
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        Refuser le candidat
+                    </button>
+                </form>
+                @endif
+
+                @if($application->status !== 'En attente')
+                <form method="POST" action="{{ route('admin.applications.status', $application) }}">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="status" value="En attente">
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-semibold rounded-lg transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Remettre en attente
+                    </button>
+                </form>
+                @endif
             </div>
         </div>
 
@@ -115,11 +127,12 @@
                 <div class="flex justify-between"><span class="text-gray-500">N° dossier</span><span class="font-mono font-bold text-navy">#{{ str_pad($application->id, 4, '0', STR_PAD_LEFT) }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Soumis le</span><span class="font-medium">{{ $application->created_at->format('d/m/Y') }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Heure</span><span class="font-medium">{{ $application->created_at->format('H:i') }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">CIN</span><span class="font-mono font-bold text-navy">{{ $application->cin ?? '—' }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Déclaration</span><span class="text-green-600 font-medium">✓ Acceptée</span></div>
             </div>
         </div>
 
-        {{-- Actions --}}
+        {{-- Contact / Delete actions --}}
         <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-2">
             <a href="mailto:{{ $application->email }}"
                class="flex items-center gap-2 w-full px-4 py-2.5 bg-sea-light hover:bg-sea/20 text-sea text-sm font-medium rounded-lg transition-all">

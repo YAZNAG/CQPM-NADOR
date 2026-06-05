@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Document;
 use App\Models\SiteSetting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -31,7 +32,18 @@ class AdminController extends Controller
 
     public function applications(Request $request)
     {
-        $query = Application::latest();
+        $tab = $request->get('tab', 'en_attente');
+
+        $statusMap = [
+            'en_attente' => 'En attente',
+            'accepte'    => 'Validé',
+            'refuse'     => 'Rejeté',
+        ];
+
+        $statusFilter = $statusMap[$tab] ?? 'En attente';
+        $tab = array_key_exists($tab, $statusMap) ? $tab : 'en_attente';
+
+        $query = Application::where('status', $statusFilter)->latest();
 
         if ($request->filled('q')) {
             $q = $request->q;
@@ -46,14 +58,16 @@ class AdminController extends Controller
             $query->where('type_formation', $request->type);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
         $applications = $query->paginate(15)->withQueryString();
         $types        = Application::distinct()->pluck('type_formation')->sort()->values();
 
-        return view('admin.applications.index', compact('applications', 'types'));
+        $counts = [
+            'en_attente' => Application::where('status', 'En attente')->count(),
+            'accepte'    => Application::where('status', 'Validé')->count(),
+            'refuse'     => Application::where('status', 'Rejeté')->count(),
+        ];
+
+        return view('admin.applications.index', compact('applications', 'types', 'tab', 'counts'));
     }
 
     public function showApplication(Application $application)
@@ -69,7 +83,15 @@ class AdminController extends Controller
 
         $application->update(['status' => $request->status]);
 
-        return back()->with('success', "Statut mis à jour : {$request->status}.");
+        $tabMap = [
+            'En attente' => 'en_attente',
+            'Validé'     => 'accepte',
+            'Rejeté'     => 'refuse',
+        ];
+        $tab = $tabMap[$request->status] ?? 'en_attente';
+
+        return redirect()->route('admin.applications.index', ['tab' => $tab])
+            ->with('success', "Statut mis à jour : {$request->status}.");
     }
 
     public function destroyApplication(Application $application)
@@ -78,6 +100,21 @@ class AdminController extends Controller
 
         return redirect()->route('admin.applications.index')
             ->with('success', 'Candidature supprimée avec succès.');
+    }
+
+    public function exportAdmisPdf()
+    {
+        $accepted = Application::where('status', 'Validé')
+            ->orderBy('type_formation')
+            ->orderBy('nom')
+            ->get()
+            ->groupBy('type_formation');
+
+        $pdf = Pdf::loadView('admin.applications.pdf', compact('accepted'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true]);
+
+        return $pdf->download('liste-admis-' . date('Y-m-d') . '.pdf');
     }
 
     public function documents()
@@ -97,8 +134,8 @@ class AdminController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
-            'annonce_titre' => ['required', 'string', 'max:255'],
-            'annonce_texte' => ['required', 'string', 'max:1000'],
+            'annonce_titre'  => ['required', 'string', 'max:255'],
+            'annonce_texte'  => ['required', 'string', 'max:1000'],
             'annonce_active' => ['nullable'],
         ]);
 

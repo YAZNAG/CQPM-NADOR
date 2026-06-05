@@ -10,6 +10,7 @@ class Application extends Model
         'type_formation',
         'nom',
         'prenom',
+        'cin',
         'section_candidature',
         'genre',
         'email',

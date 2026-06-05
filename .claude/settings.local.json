@@ -19,7 +19,8 @@
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\wamp64\\\\www\\\\cqpm-nador\\\\resources\\\\views\\\\admin\\\\articles\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\wamp64\\\\www\\\\cqpm-nador\\\\resources\\\\views\\\\news\")",
       "Bash(php artisan *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(composer require *)"
     ]
   }
 }

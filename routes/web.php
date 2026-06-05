@@ -3,12 +3,14 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\FiliereController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\NewsController;
 use App\Models\Article;
 use App\Models\Document;
+use App\Models\Filiere;
 use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +20,8 @@ Route::get('/', function () {
     $documents = Document::latest()->get();
     $settings  = SiteSetting::all_settings();
     $articles  = Article::latest()->take(6)->get();
-    return view('home', compact('documents', 'settings', 'articles'));
+    $filieres  = Filiere::all();
+    return view('home', compact('documents', 'settings', 'articles', 'filieres'));
 })->name('home');
 
 Route::get('/news/{article}', [NewsController::class, 'show'])->name('news.show');
@@ -47,6 +50,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
 
     // Applications
     Route::get('candidatures',                        [AdminController::class, 'applications'])->name('applications.index');
+    Route::get('candidatures/liste-admis',            [AdminController::class, 'exportAdmisPdf'])->name('applications.pdf');
     Route::get('candidatures/{application}',          [AdminController::class, 'showApplication'])->name('applications.show');
     Route::patch('candidatures/{application}/status', [AdminController::class, 'updateStatus'])->name('applications.status');
     Route::delete('candidatures/{application}',       [AdminController::class, 'destroyApplication'])->name('applications.destroy');
@@ -62,6 +66,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
 
     // Articles
     Route::resource('articles', ArticleController::class);
+
+    // Filières de formation
+    Route::resource('filieres', FiliereController::class);
 
     // Réclamations (admin) — static routes must precede {complaint} wildcard
     Route::get('complaints',                             [ComplaintController::class, 'index'])->name('complaints.index');
