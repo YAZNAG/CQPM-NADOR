@@ -21,3 +21,16 @@
     --color-green:       #1B6B3A;
     --color-green-light: #E8F5EE;
 }
+
+@layer utilities {
+    .cms-animate {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 500ms ease, transform 500ms ease, box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease;
+    }
+
+    .cms-animate.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

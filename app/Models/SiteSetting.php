@@ -9,9 +9,15 @@ class SiteSetting extends Model
 {
     protected $fillable = ['key', 'value'];
 
+    protected static function booted(): void
+    {
+        static::saved(fn () => static::clearCache());
+        static::deleted(fn () => static::clearCache());
+    }
+
     public static function get(string $key, mixed $default = null): mixed
     {
-        return static::where('key', $key)->value('value') ?? $default;
+        return static::all_settings()[$key] ?? $default;
     }
 
     public static function set(string $key, mixed $value): void
@@ -21,6 +27,13 @@ class SiteSetting extends Model
 
     public static function all_settings(): array
     {
-        return static::all()->pluck('value', 'key')->toArray();
+        return Cache::rememberForever('site_settings.all', function () {
+            return static::all()->pluck('value', 'key')->toArray();
+        });
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('site_settings.all');
     }
 }

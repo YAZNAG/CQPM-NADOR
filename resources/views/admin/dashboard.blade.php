@@ -86,7 +86,7 @@
                 $actions = [
                     ['label'=>'Gérer les candidatures', 'icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2', 'href'=>route('admin.applications.index'), 'bg'=>'bg-blue-50 hover:bg-blue-100 text-navy'],
                     ['label'=>'Gérer les documents PDF', 'icon'=>'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', 'href'=>route('admin.documents.index'), 'bg'=>'bg-red-50 hover:bg-red-100 text-red-700'],
-                    ['label'=>'Paramètres du site', 'icon'=>'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', 'href'=>route('admin.settings.index'), 'bg'=>'bg-amber-50 hover:bg-amber-100 text-amber-700'],
+                    ['label'=>'Paramètres du site', 'icon'=>'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', 'href'=>route('admin.site-settings.index'), 'bg'=>'bg-amber-50 hover:bg-amber-100 text-amber-700'],
                     ['label'=>'Voir le site public', 'icon'=>'M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14', 'href'=>route('home'), 'bg'=>'bg-gray-50 hover:bg-gray-100 text-gray-700'],
                 ];
                 @endphp
@@ -110,7 +110,7 @@
                 <span class="text-xs font-bold text-navy uppercase tracking-wide">Annonce active</span>
             </div>
             <p class="text-navy text-xs font-semibold leading-snug mb-1">{{ $settings['annonce_titre'] ?? '' }}</p>
-            <a href="{{ route('admin.settings.index') }}" class="text-xs text-gold-dark hover:underline font-medium">Modifier l'annonce →</a>
+            <a href="{{ route('admin.site-settings.index') }}" class="text-xs text-gold-dark hover:underline font-medium">Modifier les paramètres →</a>
         </div>
         @endif
 

@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
 {
+    public function public()
+    {
+        $documents = Document::latest()->get();
+        $settings  = \App\Models\SiteSetting::all_settings();
+        return view('documents.index', compact('documents', 'settings'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

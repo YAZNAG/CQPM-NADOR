@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Application extends Model
 {
     protected $fillable = [
+        'filiere_id',
         'type_formation',
         'nom',
         'prenom',
@@ -23,6 +24,7 @@ class Application extends Model
         'adresse_postale',
         'declaration_honneur',
         'status',
+        'observation',
     ];
 
     protected $casts = [
@@ -30,7 +32,17 @@ class Application extends Model
         'declaration_honneur' => 'boolean',
     ];
 
-    public const STATUSES = ['En attente', 'Validé', 'Rejeté'];
+    public const STATUSES = ['En attente', 'Incomplet', 'Validé', 'Rejeté'];
+
+    public function filiere(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Filiere::class);
+    }
+
+    public function uploadedDocuments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ApplicationDocument::class);
+    }
 
     public function getFullNameAttribute(): string
     {
@@ -40,9 +52,10 @@ class Application extends Model
     public function getStatusColorAttribute(): string
     {
         return match ($this->status) {
-            'Validé'  => 'green',
-            'Rejeté'  => 'red',
-            default   => 'amber',
+            'Validé'    => 'green',
+            'Rejeté'    => 'red',
+            'Incomplet' => 'orange',
+            default     => 'amber',
         };
     }
 }

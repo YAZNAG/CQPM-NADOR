@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\ApplicationDocument;
 use App\Models\Document;
 use App\Models\SiteSetting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -72,13 +74,27 @@ class AdminController extends Controller
 
     public function showApplication(Application $application)
     {
+        $application->load(['filiere.requiredDocuments', 'uploadedDocuments.requiredDocument']);
         return view('admin.applications.show', compact('application'));
+    }
+
+    public function updateObservation(Request $request, Application $application)
+    {
+        $request->validate(['observation' => ['nullable', 'string', 'max:1000']]);
+        $application->update(['observation' => $request->observation]);
+        return back()->with('success', 'Observation enregistrée.');
+    }
+
+    public function downloadDocument(Application $application, ApplicationDocument $document)
+    {
+        abort_unless($document->application_id === $application->id, 403);
+        return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
 
     public function updateStatus(Request $request, Application $application)
     {
         $request->validate([
-            'status' => ['required', 'in:En attente,Validé,Rejeté'],
+            'status' => ['required', 'in:En attente,Incomplet,Validé,Rejeté'],
         ]);
 
         $application->update(['status' => $request->status]);

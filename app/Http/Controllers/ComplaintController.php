@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
     public function create()
     {
-        return view('complaints.create');
+        $settings = SiteSetting::all_settings();
+
+        return view('complaints.create', compact('settings'));
     }
 
     public function store(Request $request)

@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    @php
+        $adminSettings = \App\Models\SiteSetting::all_settings();
+        $adminSigle = $adminSettings['sigle'] ?? 'CQPM Nador';
+    @endphp
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Administration') — CQPM Nador</title>
+    <title>@yield('title', 'Administration') — {{ $adminSigle }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +28,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="text-white font-bold text-sm">CQPM Nador</div>
+                    <div class="text-white font-bold text-sm">{{ $adminSigle }}</div>
                     <div class="text-gold text-xs">Administration</div>
                 </div>
             </a>
@@ -60,8 +64,8 @@
                 Documents PDF
             </a>
 
-            <a href="{{ route('admin.articles.index') }}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.articles.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+            <a href="{{ route('admin.news.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.news.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                 </svg>
@@ -69,6 +73,30 @@
                 @php $articleCount = \App\Models\Article::count(); @endphp
                 @if($articleCount > 0)
                 <span class="ml-auto bg-sea/20 text-sea text-xs font-bold px-2 py-0.5 rounded-full">{{ $articleCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('admin.events.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.events.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Événements
+                @php $eventCount = \App\Models\Event::count(); @endphp
+                @if($eventCount > 0)
+                <span class="ml-auto bg-sea/20 text-sea text-xs font-bold px-2 py-0.5 rounded-full">{{ $eventCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('admin.media.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.media.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4-4a2 2 0 012.8 0l1.2 1.2L15 10a2 2 0 012.8 0L20 12.2M4 6h16v12H4z"/>
+                </svg>
+                Galerie médias
+                @php $mediaCount = \App\Models\MediaItem::count(); @endphp
+                @if($mediaCount > 0)
+                <span class="ml-auto bg-sea/20 text-sea text-xs font-bold px-2 py-0.5 rounded-full">{{ $mediaCount }}</span>
                 @endif
             </a>
 
@@ -97,8 +125,64 @@
                 @endif
             </a>
 
-            <a href="{{ route('admin.settings.index') }}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.settings.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+            <div class="pt-4 mt-4 border-t border-white/10">
+                <div class="px-3 mb-2 text-[11px] font-bold uppercase tracking-widest text-gold/80">Gestion du site</div>
+            </div>
+
+            <a href="{{ route('admin.menus.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.menus.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                Menus
+                @php $menuCount = \App\Models\Menu::count(); @endphp
+                @if($menuCount > 0)
+                <span class="ml-auto bg-white/10 text-white/70 text-xs font-bold px-2 py-0.5 rounded-full">{{ $menuCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('admin.pages.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.pages.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h7l2 2h5a2 2 0 012 2v10a2 2 0 01-2 2z"/>
+                </svg>
+                Pages
+                @php $pageCount = \App\Models\Page::count(); @endphp
+                @if($pageCount > 0)
+                <span class="ml-auto bg-white/10 text-white/70 text-xs font-bold px-2 py-0.5 rounded-full">{{ $pageCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('admin.sections.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.sections.*') || request()->routeIs('admin.pages.sections.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5h16M4 12h16M4 19h16"/>
+                </svg>
+                Sections
+                @php $sectionCount = \App\Models\PageSection::count(); @endphp
+                @if($sectionCount > 0)
+                <span class="ml-auto bg-white/10 text-white/70 text-xs font-bold px-2 py-0.5 rounded-full">{{ $sectionCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('admin.site-settings.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.site-settings.*') || request()->routeIs('admin.settings.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.567 3-3.5S13.657 4 12 4 9 5.567 9 7.5 10.343 11 12 11zm0 2c-2.761 0-5 1.79-5 4v1h10v-1c0-2.21-2.239-4-5-4z"/>
+                </svg>
+                Identité du site
+            </a>
+
+            <a href="{{ route('admin.pages.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M8 6h8m-8 0a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2"/>
+                </svg>
+                SEO
+            </a>
+
+            <a href="{{ route('admin.site-settings.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('admin.site-settings.*') || request()->routeIs('admin.settings.*') ? 'bg-navy text-white' : 'text-white/60 hover:text-white hover:bg-white/10' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
@@ -136,7 +220,7 @@
         <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
             <div>
                 <h1 class="text-lg font-semibold text-gray-900">@yield('page-title', 'Administration')</h1>
-                <p class="text-xs text-gray-500 mt-0.5">@yield('page-subtitle', 'Panneau d\'administration CQPM Nador')</p>
+                <p class="text-xs text-gray-500 mt-0.5">@yield('page-subtitle', 'Panneau d\'administration ' . $adminSigle)</p>
             </div>
             <div class="flex items-center gap-3 text-sm text-gray-500">
                 <span class="hidden sm:inline">admin@cqpm-nador.ma</span>

@@ -1,118 +1,232 @@
 @extends('layouts.admin')
 
-@section('title', 'Paramètres du site')
-@section('page-title', 'Paramètres du site')
-@section('page-subtitle', 'Gérez le contenu dynamique affiché sur la page d\'accueil publique')
+@section('title', 'Identité du site')
+@section('page-title', 'Identité du site & paramètres globaux')
+@section('page-subtitle', 'Gestion du site > Identité, coordonnées, footer, SEO et affichage')
 
 @section('content')
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+@php
+    $value = fn (string $key, mixed $default = '') => old($key, $settings[$key] ?? $default);
+    $checked = fn (string $key, string $default = '1') => old($key, $settings[$key] ?? $default) === '1' || old($key, $settings[$key] ?? $default) === 1 || old($key, $settings[$key] ?? $default) === true;
+    $fileUrl = fn (string $key) => ! empty($settings[$key] ?? null) ? \Illuminate\Support\Facades\Storage::url($settings[$key]) : null;
+@endphp
 
-    {{-- ── Settings form ────────────────────────────────────────────────────── --}}
-    <div class="lg:col-span-2">
-        <form method="POST" action="{{ route('admin.settings.update') }}" class="space-y-5">
-            @csrf
+<form method="POST" action="{{ route('admin.site-settings.update') }}" enctype="multipart/form-data" class="space-y-6">
+    @csrf
 
-            {{-- Announcement block --}}
-            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div class="bg-navy px-5 py-4 flex items-center gap-3">
-                    <svg class="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"/></svg>
-                    <h3 class="text-white font-semibold text-sm">Bandeau d'annonce (homepage)</h3>
-                </div>
-
-                <div class="p-5 space-y-4">
-                    {{-- Active toggle --}}
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div>
-                            <div class="font-semibold text-gray-900 text-sm">Afficher le bandeau d'annonce</div>
-                            <div class="text-gray-500 text-xs mt-0.5">Le bandeau apparaît en dessous du hero sur la page d'accueil.</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer ml-4">
-                            <input type="checkbox" name="annonce_active" value="1"
-                                   {{ ($settings['annonce_active'] ?? '1') === '1' ? 'checked' : '' }}
-                                   class="sr-only peer">
-                            <div class="w-10 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-navy/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-navy"></div>
-                        </label>
-                    </div>
-
-                    {{-- Titre --}}
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                            Titre de l'annonce <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="annonce_titre"
-                               value="{{ old('annonce_titre', $settings['annonce_titre'] ?? '') }}"
-                               placeholder="Ex: Concours d'Accès 2024/2025 — Inscriptions Ouvertes"
-                               class="w-full border @error('annonce_titre') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy transition-all">
-                        @error('annonce_titre')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                    </div>
-
-                    {{-- Texte --}}
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                            Texte de l'annonce <span class="text-red-500">*</span>
-                        </label>
-                        <textarea name="annonce_texte" rows="4"
-                                  placeholder="Rédigez le texte de l'annonce qui sera visible sur la page d'accueil..."
-                                  class="w-full border @error('annonce_texte') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy transition-all resize-none">{{ old('annonce_texte', $settings['annonce_texte'] ?? '') }}</textarea>
-                        <p class="text-gray-400 text-xs mt-1">Maximum 1000 caractères. Seuls les 140 premiers sont affichés dans le bandeau.</p>
-                        @error('annonce_texte')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                    </div>
-                </div>
-            </div>
-
-            {{-- Save button --}}
-            <div class="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-5 py-4">
-                <p class="text-xs text-gray-400">Les modifications sont publiées immédiatement sur le site public.</p>
-                <button type="submit"
-                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-navy hover:bg-navy-light text-white font-semibold text-sm rounded-lg transition-all shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    Enregistrer les paramètres
-                </button>
-            </div>
-        </form>
-    </div>
-
-    {{-- ── Preview sidebar ──────────────────────────────────────────────────── --}}
-    <div>
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden sticky top-6">
-            <div class="px-5 py-4 border-b border-gray-100">
-                <h4 class="font-semibold text-gray-900 text-sm">Aperçu du bandeau</h4>
-                <p class="text-gray-400 text-xs mt-0.5">Rendu approximatif sur la page d'accueil</p>
-            </div>
-            <div class="p-4">
-                <div class="rounded-lg overflow-hidden border border-gold/30 bg-gold-light">
-                    <div class="px-3 py-2.5 flex items-start gap-2">
-                        <div class="w-6 h-6 bg-gold rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"/></svg>
-                        </div>
-                        <div>
-                            <div class="font-bold text-navy text-xs" id="preview-titre">{{ $settings['annonce_titre'] ?? 'Titre de l\'annonce' }}</div>
-                            <div class="text-navy/60 text-xs mt-1 leading-relaxed" id="preview-texte">{{ Str::limit($settings['annonce_texte'] ?? '', 100) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <p class="text-gray-400 text-xs mt-3 text-center">Rafraîchissez la page après sauvegarde pour voir l'aperçu mis à jour.</p>
-            </div>
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">1. Identité du centre</h2>
         </div>
-
-        {{-- Links --}}
-        <div class="mt-4 bg-white rounded-xl border border-gray-200 p-4">
-            <h4 class="font-semibold text-gray-900 text-sm mb-3">Pages liées</h4>
-            <div class="space-y-2">
-                <a href="{{ route('home') }}" target="_blank"
-                   class="flex items-center gap-2 text-xs text-sea hover:text-navy font-medium transition-colors">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    Voir la page d'accueil publique
-                </a>
-                <a href="{{ route('admin.documents.index') }}"
-                   class="flex items-center gap-2 text-xs text-sea hover:text-navy font-medium transition-colors">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    Gérer les documents PDF (Avis & Résultats)
-                </a>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Nom français <span class="text-red-500">*</span></label>
+                <input name="nom_fr" value="{{ $value('nom_fr') }}" class="w-full border @error('nom_fr') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                @error('nom_fr')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Nom arabe <span class="text-red-500">*</span></label>
+                <input name="nom_ar" dir="rtl" value="{{ $value('nom_ar') }}" class="w-full border @error('nom_ar') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                @error('nom_ar')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Sigle <span class="text-red-500">*</span></label>
+                <input name="sigle" value="{{ $value('sigle') }}" class="w-full border @error('sigle') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                @error('sigle')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+            <div></div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Slogan français</label>
+                <input name="slogan_fr" value="{{ $value('slogan_fr') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Slogan arabe</label>
+                <input name="slogan_ar" dir="rtl" value="{{ $value('slogan_ar') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Logo</label>
+                <input type="file" name="logo" accept=".jpg,.jpeg,.png,.webp,.svg" class="w-full border @error('logo') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm bg-white">
+                @error('logo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @if($fileUrl('logo'))
+                    <img src="{{ $fileUrl('logo') }}" alt="Logo" class="mt-3 h-20 w-20 object-contain rounded-lg border border-gray-200 bg-white">
+                    <label class="mt-2 flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" name="remove_logo" value="1"> Supprimer le logo actuel</label>
+                @endif
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Favicon</label>
+                <input type="file" name="favicon" accept=".ico,.jpg,.jpeg,.png,.webp,.svg" class="w-full border @error('favicon') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm bg-white">
+                @error('favicon')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @if($fileUrl('favicon'))
+                    <img src="{{ $fileUrl('favicon') }}" alt="Favicon" class="mt-3 h-12 w-12 object-contain rounded-lg border border-gray-200 bg-white">
+                    <label class="mt-2 flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" name="remove_favicon" value="1"> Supprimer le favicon actuel</label>
+                @endif
             </div>
         </div>
     </div>
-</div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">2. Coordonnées</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Adresse français</label>
+                <textarea name="adresse_fr" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('adresse_fr') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Adresse arabe</label>
+                <textarea name="adresse_ar" rows="3" dir="rtl" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('adresse_ar') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Téléphone</label>
+                <input name="telephone" value="{{ $value('telephone') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Email</label>
+                <input type="email" name="email" value="{{ $value('email') }}" class="w-full border @error('email') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                @error('email')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Horaires français</label>
+                <textarea name="horaires_fr" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('horaires_fr') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Horaires arabe</label>
+                <textarea name="horaires_ar" rows="3" dir="rtl" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('horaires_ar') }}</textarea>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Google Maps embed</label>
+                <textarea name="google_maps_embed" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm font-mono">{{ $value('google_maps_embed') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Latitude</label>
+                <input name="latitude" value="{{ $value('latitude') }}" class="w-full border @error('latitude') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                @error('latitude')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Longitude</label>
+                <input name="longitude" value="{{ $value('longitude') }}" class="w-full border @error('longitude') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                @error('longitude')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">3. Réseaux sociaux</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+            @foreach(['facebook_url' => 'Facebook', 'instagram_url' => 'Instagram', 'youtube_url' => 'YouTube', 'linkedin_url' => 'LinkedIn'] as $field => $label)
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">{{ $label }}</label>
+                    <input type="url" name="{{ $field }}" value="{{ $value($field) }}" class="w-full border @error($field) border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm">
+                    @error($field)<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+            @endforeach
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">WhatsApp</label>
+                <input name="whatsapp_number" value="{{ $value('whatsapp_number') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">4. Footer</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Description footer français</label>
+                <textarea name="footer_description_fr" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('footer_description_fr') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Description footer arabe</label>
+                <textarea name="footer_description_ar" rows="4" dir="rtl" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('footer_description_ar') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Copyright français</label>
+                <input name="copyright_fr" value="{{ $value('copyright_fr') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Copyright arabe</label>
+                <input name="copyright_ar" dir="rtl" value="{{ $value('copyright_ar') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">5. SEO global</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Meta title français</label>
+                <input name="default_meta_title_fr" value="{{ $value('default_meta_title_fr') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Meta title arabe</label>
+                <input name="default_meta_title_ar" dir="rtl" value="{{ $value('default_meta_title_ar') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Meta description français</label>
+                <textarea name="default_meta_description_fr" rows="3" maxlength="255" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('default_meta_description_fr') }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Meta description arabe</label>
+                <textarea name="default_meta_description_ar" rows="3" maxlength="255" dir="rtl" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('default_meta_description_ar') }}</textarea>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Image OpenGraph par défaut</label>
+                <input type="file" name="default_og_image" accept=".jpg,.jpeg,.png,.webp" class="w-full border @error('default_og_image') border-red-400 @else border-gray-300 @enderror rounded-lg px-3 py-2.5 text-sm bg-white">
+                @error('default_og_image')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @if($fileUrl('default_og_image'))
+                    <img src="{{ $fileUrl('default_og_image') }}" alt="OpenGraph" class="mt-3 h-24 w-40 object-cover rounded-lg border border-gray-200">
+                    <label class="mt-2 flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" name="remove_default_og_image" value="1"> Supprimer l’image OpenGraph actuelle</label>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">6. Paramètres d’affichage</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            @foreach([
+                'afficher_lang_switcher' => 'Afficher le sélecteur FR/AR',
+                'afficher_bouton_candidature' => 'Afficher bouton candidature',
+                'afficher_reseaux_sociaux' => 'Afficher réseaux sociaux',
+                'maintenance_mode' => 'Mode maintenance',
+            ] as $field => $label)
+                <label class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer">
+                    <input type="checkbox" name="{{ $field }}" value="1" {{ $checked($field, $field === 'maintenance_mode' ? '0' : '1') ? 'checked' : '' }} class="w-4 h-4 text-navy border-gray-300 rounded">
+                    <span class="text-sm text-gray-700">{{ $label }}</span>
+                </label>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-navy px-5 py-4">
+            <h2 class="text-white font-semibold text-sm">Bandeau d’annonce</h2>
+        </div>
+        <div class="p-5 space-y-4">
+            <label class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer">
+                <input type="checkbox" name="annonce_active" value="1" {{ $checked('annonce_active') ? 'checked' : '' }} class="w-4 h-4 text-navy border-gray-300 rounded">
+                <span class="text-sm text-gray-700">Afficher le bandeau d’annonce sur l’accueil</span>
+            </label>
+            <input name="annonce_titre" value="{{ $value('annonce_titre') }}" placeholder="Titre du bandeau" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
+            <textarea name="annonce_texte" rows="3" placeholder="Texte du bandeau" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">{{ $value('annonce_texte') }}</textarea>
+        </div>
+    </div>
+
+    <div class="sticky bottom-0 bg-white border border-gray-200 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+        <p class="text-xs text-gray-500">Les modifications sont appliquées immédiatement et le cache global est vidé automatiquement.</p>
+        <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-navy hover:bg-navy-light text-white text-sm font-semibold rounded-lg">
+            Enregistrer les paramètres globaux
+        </button>
+    </div>
+</form>
 
 @endsection

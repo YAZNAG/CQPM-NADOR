@@ -7,7 +7,7 @@
 @section('content')
 
 @php
-$tabMap = ['En attente' => 'en_attente', 'Validé' => 'accepte', 'Rejeté' => 'refuse'];
+$tabMap = ['En attente' => 'en_attente', 'Incomplet' => 'en_attente', 'Validé' => 'accepte', 'Rejeté' => 'refuse'];
 $currentTab = $tabMap[$application->status] ?? 'en_attente';
 @endphp
 
@@ -21,15 +21,16 @@ $currentTab = $tabMap[$application->status] ?? 'en_attente';
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    {{-- ── Left: detailed info ──────────────────────────────────────────────── --}}
+    {{-- Left: detailed info --}}
     <div class="lg:col-span-2 space-y-5">
 
         @php
         $sections = [
             ['title' => 'Informations de candidature', 'fields' => [
-                ['label' => 'Type de formation',  'value' => $application->type_formation],
-                ['label' => 'Section',            'value' => $application->section_candidature],
-                ['label' => 'Niveau scolaire',    'value' => $application->niveau_scolaire],
+                ['label' => 'Filière',             'value' => $application->filiere?->title_fr ?: ($application->filiere?->title ?? '—')],
+                ['label' => 'Type de formation',   'value' => $application->type_formation],
+                ['label' => 'Section',             'value' => $application->section_candidature],
+                ['label' => 'Niveau scolaire',     'value' => $application->niveau_scolaire],
             ]],
             ['title' => 'Identité', 'fields' => [
                 ['label' => 'Nom',              'value' => $application->nom],
@@ -69,54 +70,129 @@ $currentTab = $tabMap[$application->status] ?? 'en_attente';
         </div>
         @endforeach
 
+        {{-- Conditions d'accès filière --}}
+        @if($application->filiere && $application->filiere->conditions_acces_fr)
+        <div class="bg-white rounded-xl border border-amber-200 overflow-hidden">
+            <div class="bg-amber-500 px-5 py-3">
+                <h3 class="text-white font-semibold text-sm">Conditions d'accès ({{ $application->filiere->title_fr }})</h3>
+            </div>
+            <div class="p-5">
+                <pre class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{{ $application->filiere->conditions_acces_fr }}</pre>
+            </div>
+        </div>
+        @endif
+
+        {{-- Pièces justificatives --}}
+        @if($application->uploadedDocuments->isNotEmpty())
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="bg-navy px-5 py-3">
+                <h3 class="text-white font-semibold text-sm">Pièces justificatives ({{ $application->uploadedDocuments->count() }})</h3>
+            </div>
+            <ul class="divide-y divide-gray-100">
+                @foreach($application->uploadedDocuments as $doc)
+                @php
+                    $reqDoc = $doc->requiredDocument;
+                    $uploaded = true;
+                @endphp
+                <li class="px-5 py-3.5 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
+                        @if(in_array($doc->mime_type, ['image/jpeg','image/png','image/jpg']))
+                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                        @else
+                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/></svg>
+                        @endif
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900">{{ $reqDoc?->title_fr ?? 'Document' }}</p>
+                        <p class="text-xs text-gray-400">{{ $doc->original_name }} — {{ $doc->file_size_human }}</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        Reçu
+                    </span>
+                    <a href="{{ route('admin.applications.document.download', [$application, $doc]) }}"
+                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-navy/5 hover:bg-navy hover:text-white text-navy text-xs font-semibold rounded transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Télécharger
+                    </a>
+                </li>
+                @endforeach
+            </ul>
+
+            {{-- Pièces manquantes --}}
+            @if($application->filiere)
+            @php
+                $uploadedDocIds = $application->uploadedDocuments->pluck('filiere_required_document_id')->toArray();
+                $missingDocs    = $application->filiere->requiredDocuments->filter(fn($d) => $d->is_required && !in_array($d->id, $uploadedDocIds));
+            @endphp
+            @if($missingDocs->isNotEmpty())
+            <div class="px-5 py-3 bg-red-50 border-t border-red-100">
+                <p class="text-xs font-semibold text-red-700 mb-1">Pièces obligatoires manquantes :</p>
+                <ul class="space-y-0.5">
+                    @foreach($missingDocs as $missing)
+                    <li class="text-xs text-red-600">• {{ $missing->title_fr }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+            @endif
+        </div>
+        @endif
+
+        {{-- Observation admin --}}
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="bg-navy px-5 py-3">
+                <h3 class="text-white font-semibold text-sm">Observation de l'administrateur</h3>
+            </div>
+            <form method="POST" action="{{ route('admin.applications.observation', $application) }}" class="p-5">
+                @csrf @method('PATCH')
+                <textarea name="observation" rows="3" placeholder="Ajouter une observation..."
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy transition resize-none">{{ $application->observation }}</textarea>
+                <div class="mt-2 flex justify-end">
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-navy hover:bg-navy-light text-white text-xs font-semibold rounded-lg transition-all">
+                        Enregistrer l'observation
+                    </button>
+                </div>
+            </form>
+        </div>
+
     </div>
 
-    {{-- ── Right: sidebar ───────────────────────────────────────────────────── --}}
+    {{-- Right sidebar --}}
     <div class="space-y-5">
 
-        {{-- Quick action buttons --}}
+        {{-- Status --}}
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
                 <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full
-                    {{ $application->status === 'Validé' ? 'bg-green-100 text-green-700' : ($application->status === 'Rejeté' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
-                    <span class="w-1.5 h-1.5 rounded-full {{ $application->status === 'Validé' ? 'bg-green-500' : ($application->status === 'Rejeté' ? 'bg-red-500' : 'bg-amber-500') }}"></span>
-                    {{ $application->status === 'Validé' ? 'Accepté' : ($application->status === 'Rejeté' ? 'Refusé' : 'En attente') }}
+                    {{ match($application->status) {
+                        'Validé'    => 'bg-green-100 text-green-700',
+                        'Rejeté'    => 'bg-red-100 text-red-700',
+                        'Incomplet' => 'bg-orange-100 text-orange-700',
+                        default     => 'bg-amber-100 text-amber-700'
+                    } }}">
+                    <span class="w-1.5 h-1.5 rounded-full {{ match($application->status) {
+                        'Validé'    => 'bg-green-500',
+                        'Rejeté'    => 'bg-red-500',
+                        'Incomplet' => 'bg-orange-500',
+                        default     => 'bg-amber-500'
+                    } }}"></span>
+                    {{ $application->status }}
                 </span>
                 <span class="text-xs text-gray-500">Statut actuel</span>
             </div>
             <div class="p-4 space-y-2">
-                @if($application->status !== 'Validé')
+                @foreach(['Validé' => ['bg-green-500', 'hover:bg-green-600', 'Accepter'], 'Rejeté' => ['bg-red-500', 'hover:bg-red-600', 'Refuser'], 'Incomplet' => ['bg-orange-400', 'hover:bg-orange-500', 'Marquer incomplet'], 'En attente' => ['border border-amber-300 bg-amber-50', 'hover:bg-amber-100', 'Remettre en attente']] as $status => $cfg)
+                @if($application->status !== $status)
                 <form method="POST" action="{{ route('admin.applications.status', $application) }}">
                     @csrf @method('PATCH')
-                    <input type="hidden" name="status" value="Validé">
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        Accepter le candidat
+                    <input type="hidden" name="status" value="{{ $status }}">
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 {{ $cfg[0] }} {{ $cfg[1] }} {{ str_contains($cfg[0], 'border') ? 'text-amber-700' : 'text-white' }} text-sm font-semibold rounded-lg transition-all">
+                        {{ $cfg[2] }}
                     </button>
                 </form>
                 @endif
-
-                @if($application->status !== 'Rejeté')
-                <form method="POST" action="{{ route('admin.applications.status', $application) }}">
-                    @csrf @method('PATCH')
-                    <input type="hidden" name="status" value="Rejeté">
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                        Refuser le candidat
-                    </button>
-                </form>
-                @endif
-
-                @if($application->status !== 'En attente')
-                <form method="POST" action="{{ route('admin.applications.status', $application) }}">
-                    @csrf @method('PATCH')
-                    <input type="hidden" name="status" value="En attente">
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-semibold rounded-lg transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Remettre en attente
-                    </button>
-                </form>
-                @endif
+                @endforeach
             </div>
         </div>
 
@@ -128,11 +204,12 @@ $currentTab = $tabMap[$application->status] ?? 'en_attente';
                 <div class="flex justify-between"><span class="text-gray-500">Soumis le</span><span class="font-medium">{{ $application->created_at->format('d/m/Y') }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Heure</span><span class="font-medium">{{ $application->created_at->format('H:i') }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">CIN</span><span class="font-mono font-bold text-navy">{{ $application->cin ?? '—' }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Pièces</span><span class="font-medium">{{ $application->uploadedDocuments->count() }} reçue(s)</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Déclaration</span><span class="text-green-600 font-medium">✓ Acceptée</span></div>
             </div>
         </div>
 
-        {{-- Contact / Delete actions --}}
+        {{-- Actions --}}
         <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-2">
             <a href="mailto:{{ $application->email }}"
                class="flex items-center gap-2 w-full px-4 py-2.5 bg-sea-light hover:bg-sea/20 text-sea text-sm font-medium rounded-lg transition-all">
@@ -149,6 +226,7 @@ $currentTab = $tabMap[$application->status] ?? 'en_attente';
             </form>
         </div>
     </div>
+
 </div>
 
 @endsection
