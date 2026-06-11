@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             NewsSeeder::class,
             EventSeeder::class,
             MediaSeeder::class,
+            DocumentSeeder::class,
         ]);
     }
 }

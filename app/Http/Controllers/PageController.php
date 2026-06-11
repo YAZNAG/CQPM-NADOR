@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Document;
+use App\Models\Event;
 use App\Models\Filiere;
 use App\Models\MediaItem;
 use App\Models\Page;
@@ -38,6 +39,25 @@ class PageController extends Controller
             return view('pages.show', compact('page', 'sections', 'documents', 'settings', 'articles', 'filieres', 'mediaItems'));
         }
         return view('pages.static', compact('slug', 'settings'));
+    }
+
+    public function sitemap()
+    {
+        $pages    = Page::where('is_active', true)->get();
+        $articles = Article::where('is_active', true)->whereNotNull('published_at')->orderByDesc('published_at')->get();
+        $events   = Event::where('is_active', true)->get();
+        $filieres = Filiere::where('is_active', true)->get();
+        $documents = Document::latest()->get();
+
+        $content = view('sitemap', compact('pages', 'articles', 'events', 'filieres', 'documents'))->render();
+
+        return response($content, 200)->header('Content-Type', 'application/xml');
+    }
+
+    public function robots()
+    {
+        $content = "User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /lang/\n\nSitemap: " . url('/sitemap.xml');
+        return response($content, 200)->header('Content-Type', 'text/plain');
     }
 
     public function show(Page $page)

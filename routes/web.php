@@ -80,8 +80,26 @@ Route::get('/documents/telechargements', [DocumentController::class, 'public'])-
 // Communiqués
 Route::get('/communiques', [NewsController::class, 'index'])->name('communiques.index');
 
-// Centre (CMS pages)
+// Centre (CMS pages) — main + sub-pages
 Route::get('/centre', [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre')->name('centre.index');
+Route::get('/centre/presentation',   [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-presentation')->name('centre.presentation');
+Route::get('/centre/mot-directeur',  [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-mot-directeur')->name('centre.mot-directeur');
+Route::get('/centre/historique',     [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-historique')->name('centre.historique');
+Route::get('/centre/mission-vision', [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-mission-vision')->name('centre.mission-vision');
+Route::get('/centre/organigramme',   [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-organigramme')->name('centre.organigramme');
+Route::get('/centre/infrastructures',[PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-infrastructures')->name('centre.infrastructures');
+Route::get('/centre/partenaires',    [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre-partenaires')->name('centre.partenaires');
+
+// Vie Estudiantine
+Route::get('/vie-estudiantine',               [PublicPageController::class, 'staticPage'])->defaults('slug', 'vie-estudiantine')->name('vie.index');
+Route::get('/vie-estudiantine/clubs',         [PublicPageController::class, 'staticPage'])->defaults('slug', 'vie-clubs')->name('vie.clubs');
+Route::get('/vie-estudiantine/activites',     [PublicPageController::class, 'staticPage'])->defaults('slug', 'vie-activites')->name('vie.activites');
+Route::get('/vie-estudiantine/sorties',       [PublicPageController::class, 'staticPage'])->defaults('slug', 'vie-sorties')->name('vie.sorties');
+Route::get('/vie-estudiantine/temoignages',   [PublicPageController::class, 'staticPage'])->defaults('slug', 'vie-temoignages')->name('vie.temoignages');
+
+// Sitemap & Robots
+Route::get('/sitemap.xml', [PublicPageController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt',  [PublicPageController::class, 'robots'])->name('robots');
 
 // Contact
 Route::get('/contact', [PublicPageController::class, 'staticPage'])->defaults('slug', 'contact')->name('contact.index');

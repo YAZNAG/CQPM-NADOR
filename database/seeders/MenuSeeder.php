@@ -11,14 +11,15 @@ class MenuSeeder extends Seeder
     {
         // ── Parent menus ──────────────────────────────────────────────────────────
         $parents = [
-            ['slug' => 'accueil',       'title_fr' => 'Accueil',            'title_ar' => 'الرئيسية',             'url' => '/',               'position' => 1, 'footer' => true],
-            ['slug' => 'le-centre',     'title_fr' => 'Le Centre',          'title_ar' => 'المركز',               'url' => '/centre',         'position' => 2, 'footer' => true],
-            ['slug' => 'formations',    'title_fr' => 'Formations',         'title_ar' => 'التكوينات',            'url' => '/formations',     'position' => 3, 'footer' => true],
-            ['slug' => 'admission',     'title_fr' => 'Admission',          'title_ar' => 'التسجيل',             'url' => '/admission',      'position' => 4, 'footer' => true],
-            ['slug' => 'actualites',    'title_fr' => 'Actualités',         'title_ar' => 'الأخبار',              'url' => '/news',           'position' => 5, 'footer' => true],
-            ['slug' => 'avis-resultats','title_fr' => 'Avis & Résultats',   'title_ar' => 'الإعلانات والنتائج',  'url' => '/documents',      'position' => 6, 'footer' => false],
-            ['slug' => 'galerie',       'title_fr' => 'Galerie',            'title_ar' => 'المعرض',               'url' => '/galerie',        'position' => 7, 'footer' => false],
-            ['slug' => 'contact',       'title_fr' => 'Contact',            'title_ar' => 'اتصل بنا',             'url' => '/contact',        'position' => 8, 'footer' => true],
+            ['slug' => 'accueil',           'title_fr' => 'Accueil',            'title_ar' => 'الرئيسية',             'url' => '/',                    'position' => 1, 'footer' => true],
+            ['slug' => 'le-centre',         'title_fr' => 'Le Centre',          'title_ar' => 'المركز',               'url' => '/centre',              'position' => 2, 'footer' => true],
+            ['slug' => 'formations',        'title_fr' => 'Formations',         'title_ar' => 'التكوينات',            'url' => '/formations',          'position' => 3, 'footer' => true],
+            ['slug' => 'admission',         'title_fr' => 'Admission',          'title_ar' => 'التسجيل',             'url' => '/admission',           'position' => 4, 'footer' => true],
+            ['slug' => 'vie-estudiantine',  'title_fr' => 'Vie Estudiantine',   'title_ar' => 'الحياة الطلابية',     'url' => '/vie-estudiantine',    'position' => 5, 'footer' => true],
+            ['slug' => 'actualites',        'title_fr' => 'Actualités',         'title_ar' => 'الأخبار',              'url' => '/news',                'position' => 6, 'footer' => true],
+            ['slug' => 'avis-resultats',    'title_fr' => 'Avis & Résultats',   'title_ar' => 'الإعلانات والنتائج',  'url' => '/documents',           'position' => 7, 'footer' => false],
+            ['slug' => 'galerie',           'title_fr' => 'Galerie',            'title_ar' => 'المعرض',               'url' => '/galerie',             'position' => 8, 'footer' => false],
+            ['slug' => 'contact',           'title_fr' => 'Contact',            'title_ar' => 'اتصل بنا',             'url' => '/contact',             'position' => 9, 'footer' => true],
         ];
 
         foreach ($parents as $m) {
@@ -83,6 +84,13 @@ class MenuSeeder extends Seeder
                 ['slug' => 'galerie-videos',   'title_fr' => 'Vidéos',          'title_ar' => 'الفيديوهات',  'url' => '/galerie/videos',          'pos' => 2],
                 ['slug' => 'galerie-events',   'title_fr' => 'Événements',      'title_ar' => 'الفعاليات',   'url' => '/galerie/evenements',      'pos' => 3],
                 ['slug' => 'galerie-visite',   'title_fr' => 'Visite Virtuelle', 'title_ar' => 'جولة افتراضية','url' => '/galerie/visite-virtuelle','pos' => 4],
+            ],
+            // Vie Estudiantine
+            'vie-estudiantine' => [
+                ['slug' => 'vie-clubs',        'title_fr' => 'Clubs',                'title_ar' => 'الأندية',            'url' => '/vie-estudiantine/clubs',       'pos' => 1],
+                ['slug' => 'vie-activites',    'title_fr' => 'Activités',            'title_ar' => 'الأنشطة',            'url' => '/vie-estudiantine/activites',   'pos' => 2],
+                ['slug' => 'vie-sorties',      'title_fr' => 'Sorties Pédagogiques', 'title_ar' => 'الرحلات التربوية',  'url' => '/vie-estudiantine/sorties',     'pos' => 3],
+                ['slug' => 'vie-temoignages',  'title_fr' => 'Témoignages',          'title_ar' => 'شهادات الخريجين',   'url' => '/vie-estudiantine/temoignages', 'pos' => 4],
             ],
             // Contact
             'contact' => [
