@@ -157,7 +157,10 @@ class FiliereSeeder extends Seeder
             ['title_fr' => 'Formulaire de candidature signé', 'title_ar' => 'استمارة الترشيح موقعة',           'pos' => 7, 'required' => true],
         ];
 
+        // Disable FK checks so truncate works even with applications referencing filieres
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Filiere::truncate();
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         foreach ($filieres as $data) {
             $filiere = Filiere::create($data);
