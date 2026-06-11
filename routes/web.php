@@ -81,7 +81,7 @@ Route::get('/documents/telechargements', [DocumentController::class, 'public'])-
 Route::get('/communiques', [NewsController::class, 'index'])->name('communiques.index');
 
 // Centre (CMS pages)
-Route::get('/centre', [PublicPageController::class, 'show'])->defaults('pageSlug', 'centre')->name('centre.index');
+Route::get('/centre', [PublicPageController::class, 'staticPage'])->defaults('slug', 'centre')->name('centre.index');
 
 // Contact
 Route::get('/contact', [PublicPageController::class, 'staticPage'])->defaults('slug', 'contact')->name('contact.index');
